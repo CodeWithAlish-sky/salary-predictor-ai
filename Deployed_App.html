@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salary Predictor | Serverless AI</title>
+    <!-- PyScript -->
+    <link rel="stylesheet" href="https://pyscript.net/releases/2023.11.1/core.css" />
+    <script type="module" src="https://pyscript.net/releases/2023.11.1/core.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #00f0ff;
+            --secondary: #ff007f;
+            --bg-dark: #0a0a0f;
+            --glass-bg: rgba(20, 20, 30, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-muted: #a0a0b0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .background-animation {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 70% 30%, rgba(255, 0, 127, 0.1) 0%, transparent 40%);
+            animation: rotateBg 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotateBg {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .glass-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 3rem;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            0% {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--primary);
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 0, 127, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #result-container {
+            margin-top: 2rem;
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--glass-border);
+            animation: fadeIn 0.5s ease;
+        }
+
+        #result-container h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .salary-value {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #pyscript_status {
+            font-size: 0.85rem;
+            color: var(--primary);
+            margin-top: 10px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-animation"></div>
+    <div class="glass-container">
+        <header>
+            <h1>Salary Predictor</h1>
+            <p>Serverless Random Forest AI</p>
+            <p id="pyscript_status">Downloading ML Engine... (Please wait ~5s)</p>
+        </header>
+
+        <main>
+            <div id="prediction-form">
+                <div class="input-group">
+                    <label for="level">Position Level (1-10)</label>
+                    <input type="number" id="level" step="0.1" min="1" max="15" placeholder="e.g. 6.5">
+                </div>
+                <!-- Button disabled by default until PyScript loads -->
+                <button type="button" id="submit-btn" disabled>
+                    <span class="btn-text">Predict Salary</span>
+                </button>
+            </div>
+
+            <div id="result-container" class="hidden">
+                <h2>Predicted Salary</h2>
+                <div class="salary-value" id="salary-value">$0</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Configure PyScript to download scikit-learn and numpy -->
+    <py-config>
+        packages = ["scikit-learn", "numpy"]
+    </py-config>
+
+    <!-- PyScript execution block -->
+    <script type="py">
+        from pyscript import document, when
+        from sklearn.ensemble import RandomForestRegressor
+        import numpy as np
+        
+        # 1. Provide the data directly
+        X = np.array([[1], [2], [3], [4], [5], [6], [7], [8], [9], [10]])
+        y = np.array([45000, 50000, 60000, 80000, 110000, 150000, 200000, 300000, 500000, 1000000])
+
+        # 2. Train the Random Forest Regressor locally in the browser!
+        regressor = RandomForestRegressor(n_estimators=10, random_state=0)
+        regressor.fit(X, y)
+
+        # 3. Update the UI to indicate the engine is ready
+        document.getElementById("pyscript_status").innerText = "✔ AI Engine Loaded Ready"
+        document.getElementById("pyscript_status").style.color = "#00ffcc"
+        btn = document.getElementById("submit-btn")
+        btn.removeAttribute("disabled")
+
+        # 4. Bind the button click event
+        @when("click", "#submit-btn")
+        def do_prediction(event):
+            level_input = document.getElementById("level").value
+            if not level_input:
+                return
+            
+            try:
+                level = float(level_input)
+                # Predict
+                pred = regressor.predict([[level]])[0]
+                
+                # Update UI
+                res_container = document.getElementById("result-container")
+                salary_val = document.getElementById("salary-value")
+                
+                formatted = f"${pred:,.0f}"
+                salary_val.innerText = formatted
+                res_container.classList.remove("hidden")
+            except Exception as e:
+                print(f"Prediction error: {e}")
+    </script>
+</body>
+
+</html>
